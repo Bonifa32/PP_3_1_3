@@ -1,6 +1,8 @@
 package ru.kata.spring.boot_security.demo.utils;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import ru.kata.spring.boot_security.demo.models.Role;
@@ -8,24 +10,41 @@ import ru.kata.spring.boot_security.demo.models.User;
 import ru.kata.spring.boot_security.demo.repositories.RoleRepository;
 import ru.kata.spring.boot_security.demo.repositories.UserRepository;
 
-import javax.annotation.PostConstruct;
-
 @Component
-public class UserInitializer {
-    private final UserRepository userRepository;
+public class ProgramRunner implements ApplicationRunner {
     private final RoleRepository roleRepository;
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserInitializer(UserRepository userRepository, RoleRepository roleRepository,
-                           PasswordEncoder passwordEncoder) {
-        this.passwordEncoder = passwordEncoder;
-        this.userRepository = userRepository;
+    public ProgramRunner(RoleRepository roleRepository,
+                         UserRepository userRepository,
+                         PasswordEncoder passwordEncoder) {
         this.roleRepository = roleRepository;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        initializeRoles();
+        initializeUsers();
     }
 
-    @PostConstruct
-    public void init() {
+    private void initializeRoles() {
+        if (roleRepository.findByRoleName("ROLE_USER") == null) {
+            Role userRole = new Role();
+            userRole.setRoleName("ROLE_USER");
+            roleRepository.save(userRole);
+        }
+
+        if (roleRepository.findByRoleName(("ROLE_ADMIN")) == null) {
+            Role adminRole = new Role();
+            adminRole.setRoleName("ROLE_ADMIN");
+            roleRepository.save(adminRole);
+        }
+    }
+
+    private void initializeUsers() {
         if (userRepository.findByUsername("admin") == null) {
             User user1 = new User("Albert", "Semenov", 26);
             Role adminRole = roleRepository.findByRoleName("ROLE_ADMIN");
@@ -44,5 +63,4 @@ public class UserInitializer {
 
         }
     }
-
 }

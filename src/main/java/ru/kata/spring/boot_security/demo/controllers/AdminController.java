@@ -8,30 +8,39 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.kata.spring.boot_security.demo.models.User;
+import ru.kata.spring.boot_security.demo.repositories.RoleRepository;
 import ru.kata.spring.boot_security.demo.services.UserService;
 
+import java.util.List;
 import java.util.Optional;
 
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
     UserService userService;
+    RoleRepository roleRepository;
 
     @Autowired
-    public AdminController(UserService userService) {
+    public AdminController(UserService userService, RoleRepository roleRepository) {
+        this.roleRepository = roleRepository;
         this.userService = userService;
     }
 
     @GetMapping("/users")
     public String getUser(Model model) {
         model.addAttribute("users", userService.getUsers());
+        model.addAttribute("allRoles", roleRepository.findAll());
         return "users";
     }
 
     @PostMapping("/add")
-    public String addUser(@RequestParam String name, @RequestParam String lastName, @RequestParam int age) {
-        User user = new User(name, lastName, age);
-        userService.addUser(user);
+    public String addUser(@RequestParam String name,
+                          @RequestParam String lastName,
+                          @RequestParam int age,
+                          @RequestParam List<Integer> roleIds,
+                          @RequestParam String username,
+                          @RequestParam String password) {
+        userService.addUser(name, lastName, age, username, password, roleIds);
         return "redirect:/admin/users";
     }
 
@@ -45,17 +54,14 @@ public class AdminController {
     public String updateUser(
             @RequestParam int id,
             @RequestParam String name,
-            @RequestParam String lastName,
-            @RequestParam int age) {
+            @RequestParam String lastname,
+            @RequestParam int age,
+            @RequestParam List<Integer> roleIds,
+            @RequestParam String username,
+            @RequestParam String password) {
 
-        Optional<User> optional = userService.getUserById(id);
-        if (optional.isPresent()) {
-            User user = optional.get();
-            user.setName(name);
-            user.setLastName(lastName);
-            user.setAge(age);
-            userService.changeUser(user);
-        }
+        userService.changeUser(id, name, lastname, age, username, password,
+                roleIds);
 
         return "redirect:/admin/users";
     }
@@ -66,7 +72,8 @@ public class AdminController {
         if (optional.isPresent()) {
             User user = optional.get();
             model.addAttribute("user", user);
-            model.addAttribute("users", userService.getUsers());
+            //model.addAttribute("users", userService.getUsers());
+            model.addAttribute("allRoles", roleRepository.findAll());
             return "editUser";
         } else {
             return "redirect:/admin/users";
