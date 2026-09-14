@@ -13,7 +13,6 @@ import ru.kata.spring.boot_security.demo.repositories.RoleRepository;
 import ru.kata.spring.boot_security.demo.services.UserService;
 
 import java.util.List;
-import java.util.Optional;
 
 @Controller
 @RequestMapping("/admin")
@@ -66,20 +65,5 @@ public class AdminController {
                 roleIds);
 
         return "redirect:/admin/users";
-    }
-
-    @GetMapping("/edit")
-    public String editUser(@RequestParam int id, Model model) {
-        Optional<User> optional = userService.getUserById(id);
-        if (optional.isPresent()) {
-            User user = optional.get();
-            model.addAttribute("user", user);
-            //model.addAttribute("users", userService.getUsers());
-            model.addAttribute("allRoles", roleRepository.findAll());
-            return "editUser";
-        } else {
-            return "redirect:/admin/users";
-        }
-
     }
 }

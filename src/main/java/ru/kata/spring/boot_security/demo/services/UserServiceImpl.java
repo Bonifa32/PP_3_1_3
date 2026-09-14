@@ -60,7 +60,9 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             user.setLastName(lastname);
             user.setAge(age);
             user.setUsername(username);
-            user.setPassword(passwordEncoder.encode(password));
+            if (password != null && !password.isEmpty()) {
+                user.setPassword(passwordEncoder.encode(password));
+            }
             if (roleIds != null && !roleIds.isEmpty()) {
                 Set<Role> roles = new HashSet<>(roleRepository.findAllById(roleIds));
                 user.setRoles(roles);
